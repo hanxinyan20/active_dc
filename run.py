@@ -2,6 +2,7 @@
 import argparse
 from dataloader import RawDataLoader, LossDataLoader
 from model.active_dc_model import ActiveDCModel
+from model.bayesian_adc_model import BayesianADCModel
 
 
 parser = argparse.ArgumentParser()
@@ -42,12 +43,17 @@ if __name__ == "__main__":
                                       raw_data_loader.source_y, 
                                       raw_data_loader.target_x, 
                                       raw_data_loader.target_y, 
+                                      raw_data_loader.feature_names,
                                       pred_model_class=pred_model_class)
     
     region_model_class = args.region_model_class
     expected_loss_class = args.expected_loss_model_class
-    active_dc_model = ActiveDCModel(loss_data_loader, region_model_class=region_model_class, expected_loss_class=expected_loss_class)
-    active_dc_model.train_and_collect()
+    # active_dc_model = ActiveDCModel(loss_data_loader, region_model_class=region_model_class, expected_loss_class=expected_loss_class)
+    # active_dc_model.train_and_collect()
+    bayesian_adc_model = BayesianADCModel(loss_data_loader, expected_loss_class=expected_loss_class)
+    bayesian_adc_model.train_and_collect()
+    
+    
     
     
     

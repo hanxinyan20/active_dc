@@ -24,18 +24,15 @@ class RawDataLoader:
                 self.source_data_df = data_source.get_data(states=[kwargs.get("source_state", [])], download=False)
                 self.target_data_df = data_source.get_data(states=[kwargs.get("target_state", [])], download=False)
                 self.source_x, self.source_y,_ = ACSIncome.df_to_numpy(self.source_data_df)
-                # source只保留10000条数据
+                # TODO: source只保留10000条数据(delete)
                 self.source_x = self.source_x[:10000]
                 self.source_y = self.source_y[:10000]
                 
-                # print("self.source_x.shape",self.source_x.shape)
-                # print("self.source_y.shape",self.source_y.shape)
-                # source_y is now a 1d array, each element is a boolean value
-                # transform source_y to a 2d array, each element is a 1d array with 2 binary elements, [1,0] or [0,1]
-                # self.source_y = np.array([[1,0] if y else [0,1] for y in self.source_y])
-                # print(self.source_y[0])
                 self.target_x, self.target_y,_ = ACSIncome.df_to_numpy(self.target_data_df)
                 # self.target_y = np.array([[1,0] if y else [0,1] for y in self.target_y])
+                # 提取特征名
+                self.feature_names = self.source_data_df.columns.tolist()
+                
             except Exception as e:
                 raise ValueError(f"No downloaded data: {e}")
         else:

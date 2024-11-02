@@ -27,6 +27,7 @@ class ActiveDCModel:
         new_target_x, new_target_y = \
             self.loss_data_loader.collect_new_target_data(self.is_in_region_S, self.nums_each_iter)    
         self.loss_data_loader.merge_new_target_data(new_target_x, new_target_y)
+        return new_target_x, new_target_y
     
     def fit_expected_loss_model(self):
         # fit f(x) = E[L|x]
@@ -59,12 +60,10 @@ class ActiveDCModel:
             self.region_model = train_linear_reg(all_x_train, all_b_train, all_x_valid, all_b_valid)
         else:
             raise ValueError(f"Region model class {self.region_model_class} not supported.")
-    
-    def identify_region(self):
-        print("identifying region...")
         all_x, all_l, all_t = self.loss_data_loader.get_x_l_t_pairs()
         all_scores = self.region_model.predict(all_x)
         self.cutoff = np.quantile(all_scores, 1-self.beta)
+        
         
     def is_in_region_S(self,x):
         if self.region_model is None:
@@ -95,7 +94,6 @@ class ActiveDCModel:
             self.collect_data()
             self.fit_expected_loss_model()
             self.fit_region_model()
-            self.identify_region()
             self.plot_region_model("plot/tree" + f"b{self.beta}_n{self.nums_each_iter}_i{i}.png")
             # exit(1)
         return self.region_model, self.cutoff    

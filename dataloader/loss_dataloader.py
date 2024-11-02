@@ -6,13 +6,14 @@ import sys
 sys.path.append("../..")
 from model.helpers import train_logreg, train_linear_reg, train_decision_tree_reg, train_random_forest_reg, train_decision_tree, train_random_forest
 class LossDataLoader:
-    def __init__(self, source_x, source_y, target_x, target_y, source_train_size:float=0.5, source_valid_in_train_size:float=0.25, pred_model_class:str="RandomForestClassifier"):
+    def __init__(self, source_x, source_y, target_x, target_y, feature_names, source_train_size:float=0.5, source_valid_in_train_size:float=0.25, pred_model_class:str="RandomForestClassifier"):
         
         # split source data into training validation and test sets;
         # training + valid is used to fit ourtcome model f(x); after fitting, these data should never be used again
         # source_test is used to identify region
         print("initializing LossDataLoader...")
         print("prediction model class is ",pred_model_class)
+        self.features_names = feature_names
         self.source_x = source_x
         self.source_y = source_y
         self.source_train_x, self.source_region_x, self.source_train_y, self.source_region_y = \
@@ -98,16 +99,29 @@ class LossDataLoader:
         # self.latent_target_x = np.delete(self.latent_target_x, indices_to_collect, axis=0)
         # self.latent_target_y = np.delete(self.latent_target_y, indices_to_collect, axis=0)
         
+        structured_array = np.ascontiguousarray(new_target_x).view(np.dtype((np.void, new_target_x.dtype.itemsize * new_target_x.shape[1])))
+        _, unique_indices = np.unique(structured_array, return_index=True)
+        # print("unique:",len(unique_indices))
+        # print("total collected:", len(new_target_x))
+        # exit(1)
         return new_target_x, new_target_y
     
-    def get_x_y_pairs(self):
-        all_x = np.concatenate([self.source_region_x, self.collected_target_x])
-        all_y = np.concatenate([self.source_region_y, self.collected_target_y])
-        return all_x, all_y
+    def get_target_latent_x_y(self):
+        return self.latent_target_x, self.latent_target_y
 
     def get_x_l_t_pairs(self):
         all_x = np.concatenate([self.source_region_x, self.collected_target_x])
         all_l = np.concatenate([self.source_region_loss, self.collected_target_loss])
         all_t = np.concatenate([np.zeros(len(self.source_region_x)), np.ones(len(self.collected_target_x))])
         return all_x, all_l, all_t
+    def get_features_dim(self):
+        return self.source_x.shape[1]
+    def get_bounds(self):
+        # return the bounds of the each feature
+        bounds = {}
+        for i in range(self.source_x.shape[1]):
+            bounds[self.features_names[i]] = (np.min(self.latent_target_x[:,i]), np.max(self.latent_target_x[:,i]))
+        return bounds
+    
+        
                                             
